@@ -1,6 +1,5 @@
 FROM centos:latest
 
-#install packages
 ENV WP_HOME /opt/wordpress
 
 RUN yum install -y httpd php php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pecl-memcache php-pecl-memcached php-gd php-mbstring php-mcrypt php-xml wget tar && \
@@ -24,7 +23,8 @@ RUN sed -i -f $WP_HOME/scripts.d/httpdconf.sed /etc/httpd/conf/httpd.conf && \
     chmod -R a+rwx /var/run/httpd && \
     cp $WP_HOME/scripts.d/wp.conf /etc/httpd/conf.d/welcome.conf && \
     chown -R wordpress.0 $WP_HOME && \
-    chmod -R g+rwx $WP_HOME
+    chmod -R g+rwx $WP_HOME && \
+    chmod -R a+rx $WP_HOME
 WORKDIR "/opt/wordpress"
 VOLUME ["/opt/wordpress"]
 EXPOSE 8080
