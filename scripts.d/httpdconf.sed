@@ -1,9 +1,9 @@
 s/^Listen 80/Listen 0.0.0.0:8080/
 s/^User apache/User wordpress/
 s/^Group apache/Group root/
-s%^DocumentRoot "/var/www/html"%DocumentRoot "/opt/wordpress"%
-s%^<Directory "/var/www/html"%<Directory "/opt/wordpress"%
-s%^<Directory "/opt/rh/httpd24/root/var/html"%<Directory "/opt/wordpress"%
+s%^DocumentRoot "/var/www/html"%DocumentRoot "/wordpress"%
+s%^<Directory "/var/www/html"%<Directory "/wordpress"%
+s%^<Directory "/opt/rh/httpd24/root/var/html"%<Directory "/wordpress"%
 s%^ErrorLog "logs/error_log"%ErrorLog "/tmp/error_log"%
 s%CustomLog "logs/access_log"%CustomLog "|/usr/bin/cat"%
 151s%AllowOverride None%AllowOverride All%
