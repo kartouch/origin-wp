@@ -16,14 +16,15 @@ RUN cd / && \
     sed -i 's|'\'database_name_here\''|getenv('MYSQL_DATABASE')|g' $WP_HOME/wp-config.php && \
     sed -i 's|'\'username_here\''|getenv('MYSQL_USER')|g' $WP_HOME/wp-config.php && \
     sed -i 's|'\'password_here\''|getenv('MYSQL_PASSWORD')|g' $WP_HOME/wp-config.php && \
-    sed -i 's|'\'localhost\''|getenv('MYSQL_SERVICE_HOST')|g' $WP_HOME/wp-config.php 
+    sed -i 's|'\'localhost\''|getenv('MYSQL_SERVICE_HOST')|g' $WP_HOME/wp-config.php && \
+    echo "define('FS_METHOD', 'direct');" >> $WP_HOME/wp-config.php
 
 COPY ./scripts.d/ $WP_HOME/scripts.d
 RUN sed -i -f $WP_HOME/scripts.d/httpdconf.sed /etc/httpd/conf/httpd.conf && \
     chmod -R a+rwx /var/run/httpd && \
     cp $WP_HOME/scripts.d/wp.conf /etc/httpd/conf.d/welcome.conf && \
     chown -R wordpress.0 $WP_HOME && \
-    chmod -R 770 $WP_HOME 
+    chmod -R 774 $WP_HOME
 
 WORKDIR $WP_HOME
 
