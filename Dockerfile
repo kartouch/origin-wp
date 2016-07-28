@@ -24,7 +24,7 @@ RUN sed -i -f $WP_HOME/scripts.d/httpdconf.sed /etc/httpd/conf/httpd.conf && \
     chmod -R a+rwx /var/run/httpd && \
     cp $WP_HOME/scripts.d/wp.conf /etc/httpd/conf.d/welcome.conf && \
     chown -R wordpress.0 $WP_HOME && \
-    chmod -R 774 $WP_HOME
+    chmod -R 760 $WP_HOME
 
 WORKDIR $WP_HOME
 
