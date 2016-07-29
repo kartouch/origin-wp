@@ -1,36 +1,57 @@
-FROM centos:latest
+FROM centos:centos7
 
-ENV WP_HOME /wordpress
+ENV NGINX_HOME /var/www/wordpress
 
-RUN yum install -y httpd php php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pecl-memcache php-pecl-memcached php-gd php-mbstring php-mcrypt php-xml wget tar nss_wrapper gettext && \
-    rm -rf /var/cache/yum/* && \
-    groupadd wordpress -g 55 && \
-    useradd wordpress -u 55 -g wordpress -s /sbin/nologin -d "$WP_HOME" && \
-    test "$(id wordpress)" = "uid=55(wordpress) gid=55(wordpress) groups=55(wordpress)"
+# Update image os/ Install nginx php + php libs / clear yum data
+RUN yum -y update && \
+	yum -y install epel-release && yum -y install nginx php php-fpm php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pecl-memcache php-pecl-memcached \
+	php-gd php-mbstring php-mcrypt php-xml wget tar nss_wrapper gettext supervisor && \
+	yum clean all && \
+	groupadd wordpress -g 55 && \
+	useradd wordpress -u 55 -g wordpress -s /sbin/nologin -d "$NGINX_HOME" && \
+        test "$(id wordpress)" = "uid=55(wordpress) gid=55(wordpress) groups=55(wordpress)"
 
-RUN cd / && \
+
+# Download / install / configure WP
+RUN cd /var/www && \
     wget -nv https://wordpress.org/latest.tar.gz && \
     tar xvfa latest.tar.gz && \
-    mkdir -p $WP_HOME/{scripts.d,phpsessions} && \
-    mv $WP_HOME/wp-config-sample.php $WP_HOME/wp-config.php && \
-    sed -i 's|'\'database_name_here\''|getenv('MYSQL_DATABASE')|g' $WP_HOME/wp-config.php && \
-    sed -i 's|'\'username_here\''|getenv('MYSQL_USER')|g' $WP_HOME/wp-config.php && \
-    sed -i 's|'\'password_here\''|getenv('MYSQL_PASSWORD')|g' $WP_HOME/wp-config.php && \
-    sed -i 's|'\'localhost\''|getenv('MYSQL_SERVICE_HOST')|g' $WP_HOME/wp-config.php && \
-    echo "define('FS_METHOD', 'direct');" >> $WP_HOME/wp-config.php
 
-COPY ./scripts.d/ $WP_HOME/scripts.d
-RUN sed -i -f $WP_HOME/scripts.d/httpdconf.sed /etc/httpd/conf/httpd.conf && \
-    chmod -R a+rwx /var/run/httpd && \
-    cp $WP_HOME/scripts.d/wp.conf /etc/httpd/conf.d/welcome.conf && \
-    chown -R wordpress.0 $WP_HOME && \
-    chmod -R 760 $WP_HOME
+		# PHP config edits
+		sed -i 's|;cgi.fix_pathinfo=1|cgi.fix_pathinfo=0|'g /etc/php.ini && \
+		sed -i 's|post_max_size = 8M|post_max_size = 100M|'g /etc/php.ini && \
+		sed -i 's|upload_max_filesize = 8M|upload_max_filesize = 100M|'g /etc/php.ini && \
 
-WORKDIR $WP_HOME
+	 	# FPM config edits
+		sed -i 's|error_log = /var/log/php-fpm/error.log|error_log = /tmp/php-fpm_error.log|'g /etc/php-fpm.conf && \
+		sed -i 's|pid = /run/php-fpm/php-fpm.pid|pid = /tmp/php-fpm.pid|'g /etc/php-fpm.conf && \
 
-VOLUME ["/wordpress"]
+		# FPM conf.d www config edits
+
+		sed -i 's|listen = 127.0.0.1:9000|listen = '\/var\/run\/php-fpm\/php-fpm.sock'|'g /etc/php-fpm.d/www.conf && \
+		sed -i 's|user = apache|user = wordpress|'g /etc/php-fpm.d/www.conf && \
+		sed -i 's|group = apache|group = wordpress|'g /etc/php-fpm.d/www.conf && \
+		sed -i 's|listen.allowed_clients = 127.0.0.1||g' /etc/php-fpm.d/www.conf
+
+
+RUN chown -R wordpress.0 $NGINX_HOME && \
+		chmod -R g+rwx $NGINX_HOME && \
+    chown -R wordpress.0 /var/lib/nginx && \
+    chmod -R ug+rwx /var/lib/nginx && \
+		chown -R wordpress.0 /var/run/php-fpm
+
+WORKDIR $NGINX_HOME
 EXPOSE 8080
+
+# Add config
+ADD nginx.conf /etc/nginx/nginx.conf
+ADD supervisord.conf /etc/supervisord.conf
+ADD passwd.template /tmp/passwd.template
+
+COPY ./start.sh /start.sh
+RUN chown -R wordpress.0 /start.sh && \
+chmod 770 /start.sh
+
 USER 55
-CMD ["./scripts.d/start.sh"]
 
-
+ENTRYPOINT [ "/start.sh" ]
