@@ -24,7 +24,7 @@ RUN cd /var/www && \
 
 	 	# FPM config edits
 		sed -i 's|error_log = /var/log/php-fpm/error.log|error_log = /tmp/php-fpm_error.log|'g /etc/php-fpm.conf && \
-		sed -i 's|pid = /run/php-fpm/php-fpm.pid|pid = /tmp/php-fpm.pid|'g /etc/php-fpm.conf && \
+		sed -i '1s/^/pid = \/tmp\/php-fpm.pid \n/' /etc/php-fpm.d/www.conf && \
 
 		# FPM conf.d www config edits
 
