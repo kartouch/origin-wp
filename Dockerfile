@@ -31,14 +31,17 @@ RUN cd /var/www && \
 		sed -i 's|listen = 127.0.0.1:9000|listen = '\/var\/run\/php-fpm\/php-fpm.sock'|'g /etc/php-fpm.d/www.conf && \
 		sed -i 's|user = apache|user = wordpress|'g /etc/php-fpm.d/www.conf && \
 		sed -i 's|group = apache|group = wordpress|'g /etc/php-fpm.d/www.conf && \
-		sed -i 's|listen.allowed_clients = 127.0.0.1||g' /etc/php-fpm.d/www.conf
+		sed -i 's|listen.allowed_clients = 127.0.0.1||g' /etc/php-fpm.d/www.conf && \
+		echo "listen.mode = 660" >> /etc/php-fpm.d/www.conf
+ 
 
 
 RUN chown -R wordpress.0 $NGINX_HOME && \
-		chmod -R g+rwx $NGINX_HOME && \
+    chmod -R g+rwx $NGINX_HOME && \
     chown -R wordpress.0 /var/lib/nginx && \
     chmod -R ug+rwx /var/lib/nginx && \
-		chown -R wordpress.0 /var/run/php-fpm
+    chown -R wordpress.0 /var/run/php-fpm && \
+    chmod -R 777 /var/run/php-fpm		
 
 WORKDIR $NGINX_HOME
 EXPOSE 8080
