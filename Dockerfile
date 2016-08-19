@@ -57,4 +57,5 @@ chmod 770 /start.sh
 
 USER 55
 
+VOLUME ["/var/www/wordpress"]
 ENTRYPOINT [ "/start.sh" ]
