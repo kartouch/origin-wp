@@ -7,9 +7,9 @@ RUN yum -y update && \
 	yum -y install epel-release && yum -y install nginx php php-fpm php-pecl-apcu php-cli php-pear php-pdo php-mysqlnd php-pecl-memcache php-pecl-memcached \
 	php-gd php-mbstring php-mcrypt php-xml wget tar nss_wrapper gettext supervisor && \
 	yum clean all && \
-	groupadd wordpress -g 55 && \
-	useradd wordpress -u 55 -g wordpress -s /sbin/nologin -d "$NGINX_HOME" && \
-        test "$(id wordpress)" = "uid=55(wordpress) gid=55(wordpress) groups=55(wordpress)"
+	groupadd wordpress -g 56 && \
+	useradd wordpress -u 56 -g wordpress -s /sbin/nologin -d "$NGINX_HOME" && \
+        test "$(id wordpress)" = "uid=56(wordpress) gid=56(wordpress) groups=56(wordpress)"
 
 
 # Download / install / configure WP
@@ -55,7 +55,7 @@ COPY ./start.sh /start.sh
 RUN chown -R wordpress.0 /start.sh && \
 chmod 770 /start.sh
 
-USER 55
+USER 56
 
 VOLUME ["/var/www/wordpress"]
 ENTRYPOINT [ "/start.sh" ]
